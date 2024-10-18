@@ -1,0 +1,30 @@
+resources:
+  jobs:
+    data_platform_tools_job:
+      
+      name: data_platform_tools_job
+
+      schedule:
+        quartz_cron_expression: 40 0 7 * * ?
+        timezone_id: UTC
+        pause_status: UNPAUSED
+
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+        - name: bundle_target
+          default: ${bundle.target}
+
+      tasks:
+        - task_key: data_platform_tools_task
+          notebook_task:
+            notebook_path: ../src/create_dataplatform_system_tables.ipynb
+        - task_key: create_view_all_privileges_task
+          depends_on:
+            - task_key: data_platform_tools_task
+          sql_task:
+            file:
+              path: ../src/create_system_views.sql
+            warehouse_id: ${var.warehouse_id}
