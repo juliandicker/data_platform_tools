@@ -26,5 +26,12 @@ resources:
             - task_key: data_platform_tools_task
           sql_task:
             file:
-              path: ../src/create_system_views.sql
+              path: ../src/create_view_all_privileges.sql
+            warehouse_id: ${var.warehouse_id}
+        - task_key: create_view_cluster_version_support_task
+          depends_on:
+            - task_key: data_platform_tools_task
+          sql_task:
+            file:
+              path: ../src/create_view_cluster_version_support.sql
             warehouse_id: ${var.warehouse_id}

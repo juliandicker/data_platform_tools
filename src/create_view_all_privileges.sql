@@ -6,6 +6,39 @@ create or replace view all_privileges as
   with all_privileges_cte (object_type, object_name, object_owner, grantee, catalog_name, schema_name, privilege_type, is_grantable, inherited_from)
   as
   (
+
+    select
+        'warehouse' as object_type,
+        w.name as object_name,
+        ifnull(u.username, "Not tagged") as object_owner,    
+        wp.display_name grantee,
+        'N/A' as catalog_name,
+        'N/A' as schema_name,
+        privilege_type,
+        "N/A" as is_grantable,
+        ifnull(wp.inherited_from_object[0], 'NONE') as inherited_from
+    from IDENTIFIER({{catalog}}||'.'||{{schema}}||'.warehouse_privileges') as wp
+    join IDENTIFIER({{catalog}}||'.'||{{schema}}||'.warehouses') as w on wp.warehouse_id = w.id
+    left join IDENTIFIER({{catalog}}||'.'||{{schema}}||'.users') as u on u.id = w.owner_id
+
+    union all
+
+    select
+        'cluster' as object_type,
+        c.cluster_name as object_name,
+        ifnull(u.username, "Not tagged") as object_owner,    
+        cp.display_name grantee,
+        'N/A' as catalog_name,
+        'N/A' as schema_name,
+        privilege_type,
+        "N/A" as is_grantable,
+        ifnull(cp.inherited_from_object[0], 'NONE') as inherited_from
+    from IDENTIFIER({{catalog}}||'.'||{{schema}}||'.cluster_privileges') as cp
+    join IDENTIFIER({{catalog}}||'.'||{{schema}}||'.clusters') as c on cp.cluster_id = c.cluster_id
+    left join IDENTIFIER({{catalog}}||'.'||{{schema}}||'.users') as u on u.id = c.owner_id
+
+    union all
+
     select
         'workspace' as object_type,
         w.workspace_name as object_name,
@@ -15,9 +48,9 @@ create or replace view all_privileges as
         'N/A' as schema_name,
         privilege_type,
         "N/A" as is_grantable,
-        "N/A" as inherited_from
-    from {{catalog}}.{{schema}}.workspace_privileges as wp
-    join {{catalog}}.{{schema}}.workspaces as w on wp.workspace_id = w.workspace_id
+        "NONE" as inherited_from
+    from IDENTIFIER({{catalog}}||'.'||{{schema}}||'.workspace_privileges') as wp
+    join IDENTIFIER({{catalog}}||'.'||{{schema}}||'.workspaces') as w on wp.workspace_id = w.workspace_id
 
     union all
 

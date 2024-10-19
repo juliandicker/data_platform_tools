@@ -271,6 +271,7 @@ class DatabricksSystemData:
                         ])), True),
                     StructField('display_name', StringType(), True),
                     StructField('user_name', StringType(), True),
+                    StructField('service_principal_name', StringType(), True),
                     StructField('group_name', StringType(), True)
                 ])
 
