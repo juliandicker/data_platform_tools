@@ -10,7 +10,7 @@ create or replace view all_privileges as
     select
         'warehouse' as object_type,
         w.name as object_name,
-        ifnull(u.username, "Not tagged") as object_owner,    
+        ifnull(w.owner, "Not tagged") as object_owner,    
         wp.display_name grantee,
         'N/A' as catalog_name,
         'N/A' as schema_name,
@@ -19,14 +19,13 @@ create or replace view all_privileges as
         ifnull(wp.inherited_from_object[0], 'NONE') as inherited_from
     from IDENTIFIER({{catalog}}||'.'||{{schema}}||'.warehouse_privileges') as wp
     join IDENTIFIER({{catalog}}||'.'||{{schema}}||'.warehouses') as w on wp.warehouse_id = w.id
-    left join IDENTIFIER({{catalog}}||'.'||{{schema}}||'.users') as u on u.id = w.owner_id
 
     union all
 
     select
         'cluster' as object_type,
         c.cluster_name as object_name,
-        ifnull(u.username, "Not tagged") as object_owner,    
+        ifnull(c.owner, "Not tagged") as object_owner,    
         cp.display_name grantee,
         'N/A' as catalog_name,
         'N/A' as schema_name,
@@ -35,7 +34,6 @@ create or replace view all_privileges as
         ifnull(cp.inherited_from_object[0], 'NONE') as inherited_from
     from IDENTIFIER({{catalog}}||'.'||{{schema}}||'.cluster_privileges') as cp
     join IDENTIFIER({{catalog}}||'.'||{{schema}}||'.clusters') as c on cp.cluster_id = c.cluster_id
-    left join IDENTIFIER({{catalog}}||'.'||{{schema}}||'.users') as u on u.id = c.owner_id
 
     union all
 

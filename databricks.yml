@@ -24,20 +24,20 @@ targets:
     mode: development
     default: true
     workspace:
-      host: https://adb-492227454841009.9.azuredatabricks.net/
+      host: https://adb-102787049839724.4.azuredatabricks.net/
     variables:
-      warehouse_id: 19720c22602e3b31
+      warehouse_id: 915ef4ce3a493369
       catalog: auk_dataplatform
       schema: system
 
   prod:
     mode: production
     workspace:
-      host: https://adb-492227454841009.9.azuredatabricks.net/
+      host: https://adb-102787049839724.4.azuredatabricks.net/
       # We explicitly specify /Users/julianadmin@5rqnyj.onmicrosoft.com to make sure we only have a single copy.
       root_path: /Users/julianadmin@5rqnyj.onmicrosoft.com/.bundle/${bundle.name}/${bundle.target}
     variables:
-      warehouse_id: 19720c22602e3b31
+      warehouse_id: 915ef4ce3a493369
       catalog: auk_dataplatform
       schema: system
     permissions:

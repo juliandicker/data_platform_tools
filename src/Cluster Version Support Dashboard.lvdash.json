@@ -1,0 +1,469 @@
+{
+    "datasets": [
+        {
+            "name": "7343afcb",
+            "displayName": "cluster_version_support",
+            "query": "SELECT * FROM auk_dataplatform.system.cluster_version_support"
+        }
+    ],
+    "pages": [
+        {
+            "name": "3fdc98ef",
+            "displayName": "New Page",
+            "layout": [
+                {
+                    "widget": {
+                        "name": "63f68f59",
+                        "queries": [
+                            {
+                                "name": "main_query",
+                                "query": {
+                                    "datasetName": "7343afcb",
+                                    "fields": [
+                                        {
+                                            "name": "days_until_end_of_support",
+                                            "expression": "`days_until_end_of_support`"
+                                        },
+                                        {
+                                            "name": "end_of_support_date",
+                                            "expression": "`end_of_support_date`"
+                                        },
+                                        {
+                                            "name": "cluster_name",
+                                            "expression": "`cluster_name`"
+                                        },
+                                        {
+                                            "name": "object_owner",
+                                            "expression": "`object_owner`"
+                                        },
+                                        {
+                                            "name": "spark_version_number",
+                                            "expression": "`spark_version_number`"
+                                        }
+                                    ],
+                                    "disaggregated": true
+                                }
+                            }
+                        ],
+                        "spec": {
+                            "version": 1,
+                            "widgetType": "table",
+                            "encodings": {
+                                "columns": [
+                                    {
+                                        "fieldName": "days_until_end_of_support",
+                                        "numberFormat": "0",
+                                        "booleanValues": [
+                                            "false",
+                                            "true"
+                                        ],
+                                        "imageUrlTemplate": "{{ @ }}",
+                                        "imageTitleTemplate": "{{ @ }}",
+                                        "imageWidth": "",
+                                        "imageHeight": "",
+                                        "linkUrlTemplate": "{{ @ }}",
+                                        "linkTextTemplate": "{{ @ }}",
+                                        "linkTitleTemplate": "{{ @ }}",
+                                        "linkOpenInNewTab": true,
+                                        "type": "integer",
+                                        "displayAs": "number",
+                                        "visible": true,
+                                        "order": 0,
+                                        "title": "days_until_end_of_support",
+                                        "allowSearch": false,
+                                        "alignContent": "right",
+                                        "allowHTML": false,
+                                        "highlightLinks": false,
+                                        "useMonospaceFont": false,
+                                        "preserveWhitespace": false,
+                                        "cellFormat": {
+                                            "default": {
+                                                "foregroundColor": null
+                                            },
+                                            "rules": [
+                                                {
+                                                    "if": {
+                                                        "column": "days_until_end_of_support",
+                                                        "fn": "<",
+                                                        "literal": "60"
+                                                    },
+                                                    "value": {
+                                                        "foregroundColor": "#ff0000"
+                                                    }
+                                                },
+                                                {
+                                                    "if": {
+                                                        "column": "days_until_end_of_support",
+                                                        "fn": "<",
+                                                        "literal": "90"
+                                                    },
+                                                    "value": {
+                                                        "foregroundColor": "#ff7a0c"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "displayName": "days_until_end_of_support"
+                                    },
+                                    {
+                                        "fieldName": "end_of_support_date",
+                                        "dateTimeFormat": "YYYY-MM-DD HH:mm:ss.SSS",
+                                        "booleanValues": [
+                                            "false",
+                                            "true"
+                                        ],
+                                        "imageUrlTemplate": "{{ @ }}",
+                                        "imageTitleTemplate": "{{ @ }}",
+                                        "imageWidth": "",
+                                        "imageHeight": "",
+                                        "linkUrlTemplate": "{{ @ }}",
+                                        "linkTextTemplate": "{{ @ }}",
+                                        "linkTitleTemplate": "{{ @ }}",
+                                        "linkOpenInNewTab": true,
+                                        "type": "datetime",
+                                        "displayAs": "datetime",
+                                        "visible": true,
+                                        "order": 1,
+                                        "title": "end_of_support_date",
+                                        "allowSearch": false,
+                                        "alignContent": "right",
+                                        "allowHTML": false,
+                                        "highlightLinks": false,
+                                        "useMonospaceFont": false,
+                                        "preserveWhitespace": false,
+                                        "displayName": "end_of_support_date"
+                                    },
+                                    {
+                                        "fieldName": "cluster_name",
+                                        "booleanValues": [
+                                            "false",
+                                            "true"
+                                        ],
+                                        "imageUrlTemplate": "{{ @ }}",
+                                        "imageTitleTemplate": "{{ @ }}",
+                                        "imageWidth": "",
+                                        "imageHeight": "",
+                                        "linkUrlTemplate": "{{ @ }}",
+                                        "linkTextTemplate": "{{ @ }}",
+                                        "linkTitleTemplate": "{{ @ }}",
+                                        "linkOpenInNewTab": true,
+                                        "type": "string",
+                                        "displayAs": "string",
+                                        "visible": true,
+                                        "order": 3,
+                                        "title": "cluster_name",
+                                        "allowSearch": false,
+                                        "alignContent": "left",
+                                        "allowHTML": false,
+                                        "highlightLinks": false,
+                                        "useMonospaceFont": false,
+                                        "preserveWhitespace": false,
+                                        "displayName": "cluster_name"
+                                    },
+                                    {
+                                        "fieldName": "object_owner",
+                                        "booleanValues": [
+                                            "false",
+                                            "true"
+                                        ],
+                                        "imageUrlTemplate": "{{ @ }}",
+                                        "imageTitleTemplate": "{{ @ }}",
+                                        "imageWidth": "",
+                                        "imageHeight": "",
+                                        "linkUrlTemplate": "{{ @ }}",
+                                        "linkTextTemplate": "{{ @ }}",
+                                        "linkTitleTemplate": "{{ @ }}",
+                                        "linkOpenInNewTab": true,
+                                        "type": "string",
+                                        "displayAs": "string",
+                                        "visible": true,
+                                        "order": 4,
+                                        "title": "object_owner",
+                                        "allowSearch": false,
+                                        "alignContent": "left",
+                                        "allowHTML": false,
+                                        "highlightLinks": false,
+                                        "useMonospaceFont": false,
+                                        "preserveWhitespace": false,
+                                        "displayName": "object_owner"
+                                    },
+                                    {
+                                        "fieldName": "spark_version_number",
+                                        "booleanValues": [
+                                            "false",
+                                            "true"
+                                        ],
+                                        "imageUrlTemplate": "{{ @ }}",
+                                        "imageTitleTemplate": "{{ @ }}",
+                                        "imageWidth": "",
+                                        "imageHeight": "",
+                                        "linkUrlTemplate": "{{ @ }}",
+                                        "linkTextTemplate": "{{ @ }}",
+                                        "linkTitleTemplate": "{{ @ }}",
+                                        "linkOpenInNewTab": true,
+                                        "type": "string",
+                                        "displayAs": "string",
+                                        "visible": true,
+                                        "order": 5,
+                                        "title": "spark_version_number",
+                                        "allowSearch": false,
+                                        "alignContent": "left",
+                                        "allowHTML": false,
+                                        "highlightLinks": false,
+                                        "useMonospaceFont": false,
+                                        "preserveWhitespace": false,
+                                        "displayName": "spark_version_number"
+                                    }
+                                ]
+                            },
+                            "invisibleColumns": [
+                                {
+                                    "booleanValues": [
+                                        "false",
+                                        "true"
+                                    ],
+                                    "imageUrlTemplate": "{{ @ }}",
+                                    "imageTitleTemplate": "{{ @ }}",
+                                    "imageWidth": "",
+                                    "imageHeight": "",
+                                    "linkUrlTemplate": "{{ @ }}",
+                                    "linkTextTemplate": "{{ @ }}",
+                                    "linkTitleTemplate": "{{ @ }}",
+                                    "linkOpenInNewTab": true,
+                                    "name": "cluster_id",
+                                    "type": "string",
+                                    "displayAs": "string",
+                                    "order": 2,
+                                    "title": "cluster_id",
+                                    "allowSearch": false,
+                                    "alignContent": "left",
+                                    "allowHTML": false,
+                                    "highlightLinks": false,
+                                    "useMonospaceFont": false,
+                                    "preserveWhitespace": false
+                                },
+                                {
+                                    "booleanValues": [
+                                        "false",
+                                        "true"
+                                    ],
+                                    "imageUrlTemplate": "{{ @ }}",
+                                    "imageTitleTemplate": "{{ @ }}",
+                                    "imageWidth": "",
+                                    "imageHeight": "",
+                                    "linkUrlTemplate": "{{ @ }}",
+                                    "linkTextTemplate": "{{ @ }}",
+                                    "linkTitleTemplate": "{{ @ }}",
+                                    "linkOpenInNewTab": true,
+                                    "name": "variants",
+                                    "type": "string",
+                                    "displayAs": "string",
+                                    "order": 6,
+                                    "title": "variants",
+                                    "allowSearch": false,
+                                    "alignContent": "left",
+                                    "allowHTML": false,
+                                    "highlightLinks": false,
+                                    "useMonospaceFont": false,
+                                    "preserveWhitespace": false
+                                },
+                                {
+                                    "dateTimeFormat": "YYYY-MM-DD HH:mm:ss.SSS",
+                                    "booleanValues": [
+                                        "false",
+                                        "true"
+                                    ],
+                                    "imageUrlTemplate": "{{ @ }}",
+                                    "imageTitleTemplate": "{{ @ }}",
+                                    "imageWidth": "",
+                                    "imageHeight": "",
+                                    "linkUrlTemplate": "{{ @ }}",
+                                    "linkTextTemplate": "{{ @ }}",
+                                    "linkTitleTemplate": "{{ @ }}",
+                                    "linkOpenInNewTab": true,
+                                    "name": "release_date",
+                                    "type": "datetime",
+                                    "displayAs": "datetime",
+                                    "order": 7,
+                                    "title": "release_date",
+                                    "allowSearch": false,
+                                    "alignContent": "right",
+                                    "allowHTML": false,
+                                    "highlightLinks": false,
+                                    "useMonospaceFont": false,
+                                    "preserveWhitespace": false
+                                }
+                            ],
+                            "allowHTMLByDefault": false,
+                            "itemsPerPage": 25,
+                            "paginationSize": "default",
+                            "condensed": true,
+                            "withRowNumber": false,
+                            "frame": {
+                                "showDescription": false,
+                                "showTitle": false
+                            }
+                        }
+                    },
+                    "position": {
+                        "x": 0,
+                        "y": 4,
+                        "width": 6,
+                        "height": 9
+                    }
+                },
+                {
+                    "widget": {
+                        "name": "f1072db1",
+                        "queries": [
+                            {
+                                "name": "main_query",
+                                "query": {
+                                    "datasetName": "7343afcb",
+                                    "fields": [
+                                        {
+                                            "name": "spark_version_number",
+                                            "expression": "`spark_version_number`"
+                                        },
+                                        {
+                                            "name": "monthly(end_of_support_date)",
+                                            "expression": "DATE_TRUNC(\"MONTH\", `end_of_support_date`)"
+                                        },
+                                        {
+                                            "name": "count(*)",
+                                            "expression": "COUNT(`*`)"
+                                        }
+                                    ],
+                                    "disaggregated": false
+                                }
+                            }
+                        ],
+                        "spec": {
+                            "version": 3,
+                            "widgetType": "histogram",
+                            "encodings": {
+                                "x": {
+                                    "fieldName": "monthly(end_of_support_date)",
+                                    "scale": {
+                                        "type": "temporal"
+                                    },
+                                    "displayName": "End of support date"
+                                },
+                                "y": {
+                                    "fieldName": "count(*)",
+                                    "scale": {
+                                        "type": "quantitative"
+                                    },
+                                    "axis": {
+                                        "title": "Count"
+                                    },
+                                    "displayName": "Count"
+                                },
+                                "color": {
+                                    "fieldName": "spark_version_number",
+                                    "scale": {
+                                        "type": "categorical"
+                                    },
+                                    "legend": {
+                                        "title": "Spark version"
+                                    },
+                                    "displayName": "Spark version"
+                                }
+                            },
+                            "frame": {
+                                "showDescription": false,
+                                "description": "",
+                                "showTitle": false,
+                                "title": "Number of clusters"
+                            }
+                        }
+                    },
+                    "position": {
+                        "x": 2,
+                        "y": 1,
+                        "width": 4,
+                        "height": 3
+                    }
+                },
+                {
+                    "widget": {
+                        "name": "a56a6b25",
+                        "queries": [
+                            {
+                                "name": "main_query",
+                                "query": {
+                                    "datasetName": "7343afcb",
+                                    "fields": [
+                                        {
+                                            "name": "min(days_until_end_of_support)",
+                                            "expression": "MIN(`days_until_end_of_support`)"
+                                        }
+                                    ],
+                                    "disaggregated": false
+                                }
+                            }
+                        ],
+                        "spec": {
+                            "version": 2,
+                            "widgetType": "counter",
+                            "encodings": {
+                                "value": {
+                                    "fieldName": "min(days_until_end_of_support)",
+                                    "style": {
+                                        "color": "#ffffff",
+                                        "fontSize": 92,
+                                        "rules": [
+                                            {
+                                                "condition": {
+                                                    "operator": "<",
+                                                    "operand": {
+                                                        "type": "data-value",
+                                                        "value": "60"
+                                                    }
+                                                },
+                                                "color": "#E92828"
+                                            },
+                                            {
+                                                "condition": {
+                                                    "operator": "<",
+                                                    "operand": {
+                                                        "type": "data-value",
+                                                        "value": "90"
+                                                    }
+                                                },
+                                                "color": "#FB8D3D"
+                                            }
+                                        ]
+                                    },
+                                    "displayName": "Minimum days_until_end_of_support"
+                                }
+                            },
+                            "frame": {
+                                "showTitle": true,
+                                "title": "Number of days till next cluster out of support"
+                            }
+                        }
+                    },
+                    "position": {
+                        "x": 0,
+                        "y": 1,
+                        "width": 2,
+                        "height": 3
+                    }
+                },
+                {
+                    "widget": {
+                        "name": "a1fccf49",
+                        "textbox_spec": "## Cluster version support"
+                    },
+                    "position": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 6,
+                        "height": 1
+                    }
+                }
+            ]
+        }
+    ]
+}

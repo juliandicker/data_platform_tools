@@ -5,6 +5,7 @@ Module providing utility functions to convert objects to dictionary.
 import re
 import pprint
 from pyspark.sql import SparkSession, DataFrame
+from databricks.sdk import AccountClient, WorkspaceClient
 
 def to_snake(s):
     """
@@ -43,3 +44,18 @@ def object_to_dataframe(spark: SparkSession, obj, schema = None) -> DataFrame:
         return None
     df = spark.createDataFrame(objdict, schema)
     return df
+
+def get_workspace_client(
+        account_client: AccountClient,
+        workspace_deployment_name
+        ) -> WorkspaceClient:
+    """
+    Returns a WorkspaceClient using AccountClient credentials
+    """
+
+    return WorkspaceClient(
+        host=f"https://{workspace_deployment_name}.azuredatabricks.net",
+        azure_client_id = account_client.config.azure_client_id,
+        azure_client_secret = account_client.config.azure_client_secret,
+        azure_tenant_id = account_client.config.azure_tenant_id
+    )

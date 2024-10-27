@@ -6,11 +6,11 @@ from io import StringIO
 import requests
 import pandas as pd
 from pyspark.sql import SparkSession, DataFrame
-from pyspark.sql.types import StructType, StructField, StringType, IntegerType, LongType, ArrayType, MapType, BooleanType, FloatType
-from pyspark.sql.functions import lit
-from databricks.sdk import AccountClient, WorkspaceClient
+import pyspark.sql.types as ST
+import pyspark.sql.functions as F
+from databricks.sdk import AccountClient
 from bs4 import BeautifulSoup
-from . import utils
+from . import utils, workspace_permissions
 
 class DatabricksSystemData:
     """
@@ -49,18 +49,30 @@ class DatabricksSystemData:
         """
         List the databricks workspaces
         """
-        return utils.object_to_dataframe(self.spark, self.account_client.workspaces.list())
 
+        schema = ST.StructType([
+            ST.StructField('account_id', ST.StringType(), True),
+            # ST.StructField('azure_workspace_info', ST.MapType(ST.StringType(), ST.StringType(), True), True),
+            ST.StructField('creation_time', ST.LongType(), True),
+            ST.StructField('deployment_name', ST.StringType(), True),
+            ST.StructField('location', ST.StringType(), True),
+            ST.StructField('pricing_tier', ST.StringType(), True),
+            ST.StructField('workspace_id', ST.LongType(), True),
+            ST.StructField('workspace_name', ST.StringType(), True),
+            # ST.StructField('workspace_status', ST.StringType(), True),
+            # ST.StructField('workspace_status_message', ST.StringType(), True)
+        ])
+        return utils.object_to_dataframe(self.spark, self.account_client.workspaces.list(), schema)
 
     def get_workspace_privileges(self) -> DataFrame:
         """
         List the databricks all workspaces and privileges
         """
 
-        schema = StructType([
-            StructField("permissions", StringType(), True),
-            StructField("principal", StringType(), True),
-            StructField("workspace_id", IntegerType(), True)
+        schema = ST.StructType([
+            ST.StructField("permissions", ST.StringType(), True),
+            ST.StructField("principal", ST.StringType(), True),
+            ST.StructField("workspace_id", ST.IntegerType(), True)
         ])
 
         df_all = self.spark.createDataFrame([], schema=schema)
@@ -73,7 +85,7 @@ class DatabricksSystemData:
 
             df = (utils
                   .object_to_dataframe(self.spark, wa_list)
-                  .withColumn("workspace_id", lit(workspace.workspace_id))
+                  .withColumn("workspace_id", F.lit(workspace.workspace_id))
                   )
 
             if df_all.isEmpty():
@@ -89,42 +101,38 @@ class DatabricksSystemData:
         List the databricks users
         """
 
-        schema = StructType([
-                    StructField('emails', ArrayType(StructType([
-                        StructField('primary', BooleanType(), True),
-                        StructField('type', StringType(), True),
-                        StructField('value', StringType(), True)
+        schema = ST.StructType([
+                    ST.StructField('emails', ST.ArrayType(ST.StructType([
+                        ST.StructField('primary', ST.BooleanType(), True),
+                        ST.StructField('type', ST.StringType(), True),
+                        ST.StructField('value', ST.StringType(), True)
                         ])), True),
-                    StructField('active', BooleanType(), True),
-                    StructField('displayname', StringType(), True),
-                    StructField('externalid', StringType(), True),
-                    StructField('id', StringType(), True),
-                    StructField('name', StructType([
-                        StructField('familyname', StringType(), True),
-                        StructField('givenname', StringType(), True)
+                    ST.StructField('active', ST.BooleanType(), True),
+                    ST.StructField('displayname', ST.StringType(), True),
+                    ST.StructField('externalid', ST.StringType(), True),
+                    ST.StructField('id', ST.StringType(), True),
+                    ST.StructField('name', ST.StructType([
+                        ST.StructField('familyname', ST.StringType(), True),
+                        ST.StructField('givenname', ST.StringType(), True)
                         ]), True),
-                    StructField('roles', ArrayType(StructType([
-                        StructField('type', StringType(), True),
-                        StructField('value', StringType(), True)
+                    ST.StructField('roles', ST.ArrayType(ST.StructType([
+                        ST.StructField('type', ST.StringType(), True),
+                        ST.StructField('value', ST.StringType(), True)
                         ])), True),
-                    StructField('username', StringType(), True)
+                    ST.StructField('username', ST.StringType(), True)
                 ])
 
         return utils.object_to_dataframe(self.spark, self.account_client.users.list(), schema)
 
 
-    def _get_workspace_client(self, workspace_deployment_name):
-        return WorkspaceClient(
-            host=f"https://{workspace_deployment_name}.azuredatabricks.net",
-            azure_client_id = self.account_client.config.azure_client_id,
-            azure_client_secret = self.account_client.config.azure_client_secret,
-            azure_tenant_id = self.account_client.config.azure_tenant_id
-        )
-
-    def _union(self, df, li, schema = None) -> DataFrame:
+    def _union(self, df, li, schema = None, add_cols = None) -> DataFrame:
         df_new = utils.object_to_dataframe(self.spark, li, schema)
 
-        if df_new is not None:
+        if li:
+            if add_cols is not None:
+                for k, v in add_cols.items():
+                    df_new = df_new.withColumn(k, F.lit(v))
+
             df = df.unionByName(df_new, allowMissingColumns=True)
 
         return df
@@ -133,41 +141,40 @@ class DatabricksSystemData:
         """
         List the databricks warehouses
         """
-        schema = StructType([
-                    StructField('auto_stop_mins', IntegerType(), True),
-                    StructField('creator_name', StringType(), True),
-                    StructField('enable_photon', BooleanType(), True),
-                    StructField('enable_serverless_compute', BooleanType(), True),
-                    StructField('id', StringType(), True),
-                    StructField('jdbc_url', StringType(), True),
-                    StructField('max_num_clusters', IntegerType(), True),
-                    StructField('min_num_clusters', IntegerType(), True),
-                    StructField('num_clusters', IntegerType(), True),
-                    StructField('name', StringType(), True),
-                    StructField('num_active_sessions', IntegerType(), True),
-                    StructField('odbc_params', StructType([
-                        StructField('hostname', StringType(), True),
-                        StructField('path', StringType(), True),
-                        StructField('port', IntegerType(), True),
-                        StructField('protocol', StringType(), True)
+        schema = ST.StructType([
+                    ST.StructField('auto_stop_mins', ST.IntegerType(), True),
+                    ST.StructField('creator_name', ST.StringType(), True),
+                    ST.StructField('enable_photon', ST.BooleanType(), True),
+                    ST.StructField('enable_serverless_compute', ST.BooleanType(), True),
+                    ST.StructField('id', ST.StringType(), True),
+                    # ST.StructField('jdbc_url', ST.StringType(), True),
+                    # ST.StructField('max_num_clusters', ST.IntegerType(), True),
+                    # ST.StructField('min_num_clusters', ST.IntegerType(), True),
+                    # ST.StructField('num_clusters', ST.IntegerType(), True),
+                    ST.StructField('name', ST.StringType(), True),
+                    # ST.StructField('num_active_sessions', ST.IntegerType(), True),
+                    # ST.StructField('odbc_params', ST.StructType([
+                    #     ST.StructField('hostname', ST.StringType(), True),
+                    #     ST.StructField('path', ST.StringType(), True),
+                    #     ST.StructField('port', ST.IntegerType(), True),
+                    #     ST.StructField('protocol', ST.StringType(), True)
+                    #     ]), True),
+                    ST.StructField('spot_instance_policy', ST.StringType(), True),
+                    # ST.StructField('state', ST.StringType(), True),
+                    ST.StructField('tags', ST.StructType([
+                        ST.StructField('custom_tags', ST.ArrayType(
+                            ST.MapType(ST.StringType(), ST.StringType())), True)
                         ]), True),
-                    StructField('spot_instance_policy', StringType(), True),
-                    StructField('state', StringType(), True),
-                    StructField('tags', StructType([
-                        StructField('custom_tags', ArrayType(MapType(StringType(), StringType())), True)
-                        ]), True),
-                    StructField('warehouse_type', StringType(), True)
+                    ST.StructField('warehouse_type', ST.StringType(), True)
                 ])
-
-
-        df_all = self.spark.createDataFrame([], "id STRING")
+        
+        df_all = self.spark.createDataFrame([], schema)
 
         for workspace in self.account_client.workspaces.list():
-            workspace_client = self._get_workspace_client(workspace.deployment_name)
-            df_all = (self
-                      ._union(df_all, workspace_client.warehouses.list(), schema)
-                      .withColumn("workspace_id", lit(workspace.workspace_id))
-                      )
+            workspace_client = utils.get_workspace_client(self.account_client,
+                                                workspace.deployment_name)
+            add_cols = {"workspace_id": workspace.workspace_id}
+            df_all = self._union(df_all, workspace_client.warehouses.list(), schema, add_cols)
 
         return df_all
 
@@ -176,157 +183,104 @@ class DatabricksSystemData:
         List the databricks clusters
         """
 
-        schema = StructType([
-                    StructField('num_workers', IntegerType(), True),
-                    StructField('autoscale', MapType(StringType(), IntegerType()), True),
-                    StructField('cluster_name', StringType(), True),
-                    StructField('spark_version', StringType(), True),
-                    StructField('spark_conf', MapType(StringType(), StringType()), True),
-                    StructField('azure_attributes', StructType([
-                        StructField('log_analytics_info', MapType(StringType(), StringType()), True),
-                        StructField('first_on_demand', IntegerType(), True),
-                        StructField('availability', StringType(), True),
-                        StructField('spot_bid_max_price', FloatType(), True)
-                        ]), True),
-                    StructField('node_type_id', StringType(), True),
-                    StructField('driver_node_type_id', StringType(), True),
-                    StructField('ssh_public_keys', ArrayType(StringType()), True),
-                    StructField('custom_tags', MapType(StringType(), StringType()), True),
-                    StructField('spark_env_vars', MapType(StringType(), StringType()), True),
-                    StructField('autotermination_minutes', IntegerType(), True),
-                    StructField('enable_elastic_disk', BooleanType(), True),
-                    StructField('instance_pool_id', StringType(), True),
-                    StructField('policy_id', StringType(), True),
-                    StructField('enable_local_disk_encryption', BooleanType(), True),
-                    StructField('driver_instance_pool_id', StringType(), True),
-                    StructField('workload_type', StructType([
-                        StructField('clients', MapType(StringType(), StringType()), True)
-                        ]), True),
-                    StructField('runtime_engine', StringType(), True),
-                    StructField('data_security_mode', StringType(), True),
-                    StructField('single_user_name', StringType(), True),
-                    StructField('cluster_id', StringType(), True),
-                    StructField('cluster_source', StringType(), True),
-                    StructField('creator_user_name', StringType(), True),
-                    StructField('driver', StructType([
-                        StructField('host_private_ip', StringType(), True),
-                        StructField('private_ip', StringType(), True),
-                        StructField('public_dns', StringType(), True),
-                        StructField('node_id', StringType(), True),
-                        StructField('instance_id', StringType(), True),
-                        StructField('start_timestamp', LongType(), True),
-                        ]), True),
-                    StructField('executors', ArrayType(StructType([
-                        StructField('host_private_ip', StringType(), True),
-                        StructField('private_ip', StringType(), True),
-                        StructField('public_dns', StringType(), True),
-                        StructField('node_id', StringType(), True),
-                        StructField('instance_id', StringType(), True),
-                        StructField('start_timestamp', LongType(), True),
-                        ])), True),
-                    StructField('spark_context_id', LongType(), True),
-                    StructField('jdbc_port', IntegerType(), True),
-                    StructField('state', StringType(), True),
-                    StructField('state_message', StringType(), True),
-                    StructField('start_time', LongType(), True),
-                    StructField('terminated_time', LongType(), True),
-                    StructField('last_state_loss_time', LongType(), True),
-                    StructField('last_restarted_time', LongType(), True),
-                    StructField('cluster_memory_mb', IntegerType(), True),
-                    StructField('cluster_cores', FloatType(), True),
-                    StructField('default_tags', MapType(StringType(), StringType()), True),
-                    StructField('cluster_log_status', StructType([
-                        StructField('last_attempted', LongType(), True),
-                        StructField('last_exception', StringType(), True)
-                        ]), True),
-                    StructField('termination_reason', StructType([
-                        StructField('code', StringType(), True),
-                        StructField('type', StringType(), True),
-                        StructField('parameters', MapType(StringType(), StringType()), True),
-                        ]), True)
+        schema = ST.StructType([
+                    # ST.StructField('num_workers', ST.IntegerType(), True),
+                    # ST.StructField('autoscale', ST.MapType(
+                    #     ST.StringType(), ST.IntegerType()), True),
+                    ST.StructField('cluster_name', ST.StringType(), True),
+                    ST.StructField('spark_version', ST.StringType(), True),
+                    # ST.StructField('spark_conf', ST.MapType(
+                    #     ST.StringType(), ST.StringType()), True),
+                    # ST.StructField('azure_attributes', ST.StructType([
+                    #     ST.StructField('log_analytics_info', ST.MapType(
+                    #         ST.StringType(), ST.StringType()), True),
+                    #     ST.StructField('first_on_demand', ST.IntegerType(), True),
+                    #     ST.StructField('availability', ST.StringType(), True),
+                    #     ST.StructField('spot_bid_max_price', ST.FloatType(), True)
+                    #     ]), True),
+                    ST.StructField('node_type_id', ST.StringType(), True),
+                    ST.StructField('driver_node_type_id', ST.StringType(), True),
+                    # ST.StructField('ssh_public_keys', ST.ArrayType(ST.StringType()), True),
+                    ST.StructField('custom_tags', ST.MapType(
+                        ST.StringType(), ST.StringType()), True),
+                    # ST.StructField('spark_env_vars', ST.MapType(
+                    #     ST.StringType(), ST.StringType()), True),
+                    ST.StructField('autotermination_minutes', ST.IntegerType(), True),
+                    # ST.StructField('enable_elastic_disk', ST.BooleanType(), True),
+                    # ST.StructField('instance_pool_id', ST.StringType(), True),
+                    # ST.StructField('policy_id', ST.StringType(), True),
+                    # ST.StructField('enable_local_disk_encryption', ST.BooleanType(), True),
+                    # ST.StructField('driver_instance_pool_id', ST.StringType(), True),
+                    # ST.StructField('workload_type', ST.StructType([
+                    #     ST.StructField('clients', ST.MapType(
+                    #         ST.StringType(), ST.StringType()), True)
+                    #     ]), True),
+                    ST.StructField('runtime_engine', ST.StringType(), True),
+                    ST.StructField('data_security_mode', ST.StringType(), True),
+                    ST.StructField('single_user_name', ST.StringType(), True),
+                    ST.StructField('cluster_id', ST.StringType(), True),
+                    # ST.StructField('cluster_source', ST.StringType(), True),
+                    # ST.StructField('creator_user_name', ST.StringType(), True),
+                    # ST.StructField('driver', ST.StructType([
+                    #     ST.StructField('host_private_ip', ST.StringType(), True),
+                    #     ST.StructField('private_ip', ST.StringType(), True),
+                    #     ST.StructField('public_dns', ST.StringType(), True),
+                    #     ST.StructField('node_id', ST.StringType(), True),
+                    #     ST.StructField('instance_id', ST.StringType(), True),
+                    #     ST.StructField('start_timestamp', ST.LongType(), True),
+                    #     ]), True),
+                    # ST.StructField('executors', ST.ArrayType(ST.StructType([
+                    #     ST.StructField('host_private_ip', ST.StringType(), True),
+                    #     ST.StructField('private_ip', ST.StringType(), True),
+                    #     ST.StructField('public_dns', ST.StringType(), True),
+                    #     ST.StructField('node_id', ST.StringType(), True),
+                    #     ST.StructField('instance_id', ST.StringType(), True),
+                    #     ST.StructField('start_timestamp', ST.LongType(), True),
+                    #     ])), True),
+                    ST.StructField('spark_context_id', ST.LongType(), True),
+                    # ST.StructField('jdbc_port', ST.IntegerType(), True),
+                    # ST.StructField('state', ST.StringType(), True),
+                    # ST.StructField('state_message', ST.StringType(), True),
+                    # ST.StructField('start_time', ST.LongType(), True),
+                    # ST.StructField('terminated_time', ST.LongType(), True),
+                    # ST.StructField('last_state_loss_time', ST.LongType(), True),
+                    # ST.StructField('last_restarted_time', ST.LongType(), True),
+                    ST.StructField('cluster_memory_mb', ST.IntegerType(), True),
+                    ST.StructField('cluster_cores', ST.FloatType(), True),
+                    ST.StructField('default_tags', ST.MapType(
+                        ST.StringType(), ST.StringType()), True),
+                    # ST.StructField('cluster_log_status', ST.StructType([
+                    #     ST.StructField('last_attempted', ST.LongType(), True),
+                    #     ST.StructField('last_exception', ST.StringType(), True)
+                    #     ]), True),
+                    # ST.StructField('termination_reason', ST.StructType([
+                    #     ST.StructField('code', ST.StringType(), True),
+                    #     ST.StructField('type', ST.StringType(), True),
+                    #     ST.StructField('parameters', ST.MapType(
+                    #         ST.StringType(), ST.StringType()), True),
+                    #     ]), True)
                 ])
 
-        df_all = self.spark.createDataFrame([], "cluster_id STRING")
+        df_all = self.spark.createDataFrame([], schema)
 
         for workspace in self.account_client.workspaces.list():
-            workspace_client = self._get_workspace_client(workspace.deployment_name)
-            df_all = (self
-                      ._union(df_all, workspace_client.clusters.list(), schema)
-                      .withColumn("workspace_id", lit(workspace.workspace_id))
-                      )
+            workspace_client = utils.get_workspace_client(self.account_client,
+                                                          workspace.deployment_name)
+            add_cols = {"workspace_id": workspace.workspace_id}
+            df_all = self._union(df_all, workspace_client.clusters.list(), schema, add_cols)
 
         return df_all
-
-
-    def _get_privileges(self, workspace_client, request_object_type, object_key, object_id):
-        """
-        Sub function to list privileges for a databricks object type
-        """
-
-        schema = StructType([
-                    StructField('all_permissions', ArrayType(StructType([
-                        StructField('inherited', BooleanType(), True),
-                        StructField('permission_level', StringType(), True),
-                        StructField('inherited_from_object', ArrayType(StringType()), True)
-                        ])), True),
-                    StructField('display_name', StringType(), True),
-                    StructField('user_name', StringType(), True),
-                    StructField('service_principal_name', StringType(), True),
-                    StructField('group_name', StringType(), True)
-                ])
-
-        permissions = workspace_client.permissions.get(request_object_type, object_id)
-
-        return (utils
-                .object_to_dataframe(self.spark, permissions.access_control_list, schema)
-                .withColumn(object_key, lit(object_id))
-                )
-
 
     def get_cluster_privileges(self):
         """
         List the all databricks cluster privileges
         """
-        request_object_type = "clusters"
-        object_key = "cluster_id"
-        df_all = self.spark.createDataFrame([], f"{object_key} STRING")
-
-        for workspace in self.account_client.workspaces.list():
-            workspace_client = self._get_workspace_client(workspace.deployment_name)
-
-            for cluster in workspace_client.clusters.list():
-                df_all = df_all.unionByName(
-                    self._get_privileges(
-                        workspace_client,
-                        request_object_type,
-                        object_key,
-                        cluster.cluster_id),
-                    allowMissingColumns=True)
-
-            df_all = df_all.withColumn("workspace_id", lit(workspace.workspace_id))
-
-        return df_all
+        perms = workspace_permissions.ClusterPermissions(self.spark, self.account_client)
+        return perms.get_permissions()
 
     def get_warehouse_privileges(self):
         """
         List the all databricks warehouse privileges
         """
-        request_object_type = "warehouses"
-        object_key = "warehouse_id"
-        df_all = self.spark.createDataFrame([], f"{object_key} STRING")
-
-        for workspace in self.account_client.workspaces.list():
-            workspace_client = self._get_workspace_client(workspace.deployment_name)
-
-            for warehouse in workspace_client.warehouses.list():
-                df_all = df_all.unionByName(
-                    self._get_privileges(
-                        workspace_client,
-                        request_object_type,
-                        object_key,
-                        warehouse.id),
-                    allowMissingColumns=True)
-
-            df_all = df_all.withColumn("workspace_id", lit(workspace.workspace_id))
-
-        return df_all
+        perms = workspace_permissions.WarehousePermissions(self.spark, self.account_client)
+        return perms.get_permissions()
