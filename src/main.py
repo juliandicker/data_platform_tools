@@ -8,19 +8,9 @@ from databricks.connect import DatabricksSession
 from databricks.sdk import AccountClient
 from data_platform_tools.databricks_system_data import DatabricksSystemData
 
-dbutils.widgets.text("catalog", "auk_dataplatform")
-dbutils.widgets.text("schema", "system")
-
-# --- CONFIG ----
-ACCOUNT_HOST = "accounts.azuredatabricks.net"
-TENANT_ID = "c3588c15-f840-4591-875f-b3d42610f22f"
-ACCOUNT_ID = "42ba6f6a-250d-4e87-9433-3ab73685b3f6"
-CLIENT_ID = "22a10d55-9e76-464d-96bc-3e6c3e44cc35"
-CLIENT_SECRET = dbutils.secrets.get(scope="kv-redkic-ne-test", key="DatabricksAPI")
-CATALOG_PATH = dbutils.widgets.get("catalog")
-SCHEMA_PATH = dbutils.widgets.get("schema")
-# --- END CONFIG ---
-
+dbutils.widgets.text("tenant", "c3588c15-f840-4591-875f-b3d42610f22f")
+dbutils.widgets.text("account_id", "42ba6f6a-250d-4e87-9433-3ab73685b3f6")
+dbutils.widgets.text("client_id", "22a10d55-9e76-464d-96bc-3e6c3e44cc35")
 
 def get_spark() -> SparkSession:
     """
@@ -40,15 +30,12 @@ spark = get_spark()
 def main():
     """Main entry point of wheel file"""
 
-    spark.sql(f"CREATE CATALOG IF NOT EXISTS {CATALOG_PATH}")
-    spark.sql(f"CREATE SCHEMA IF NOT EXISTS {CATALOG_PATH}.{SCHEMA_PATH}")
-
     account_client = AccountClient(
-        host = ACCOUNT_HOST,
-        account_id = ACCOUNT_ID,
-        azure_client_id = CLIENT_ID,
-        azure_client_secret = CLIENT_SECRET,
-        azure_tenant_id = TENANT_ID
+        host = "accounts.azuredatabricks.net",
+        account_id = dbutils.widgets.get("account_id"),
+        azure_client_id = dbutils.widgets.get("client_id"),
+        azure_client_secret = dbutils.secrets.get(scope="kv-redkic-ne-test", key="DatabricksAPI"),
+        azure_tenant_id = dbutils.widgets.get("tenant_id")
     )
 
     dsd = DatabricksSystemData(

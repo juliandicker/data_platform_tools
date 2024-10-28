@@ -273,14 +273,28 @@ class DatabricksSystemData:
 
     def get_cluster_privileges(self):
         """
-        List the all databricks cluster privileges
+        List all databricks cluster privileges
         """
         perms = workspace_permissions.ClusterPermissions(self.spark, self.account_client)
         return perms.get_permissions()
 
     def get_warehouse_privileges(self):
         """
-        List the all databricks warehouse privileges
+        List all databricks warehouse privileges
         """
         perms = workspace_permissions.WarehousePermissions(self.spark, self.account_client)
+        return perms.get_permissions()
+    
+    def get_dashboard_privileges(self):
+        """
+        List all databricks dashboard privileges
+        """
+        perms = workspace_permissions.DashboardPermissions(self.spark, self.account_client)
+        return perms.get_permissions()
+
+    def get_volume_privileges(self):
+        """
+        List all databricks volume privileges
+        """
+        perms = workspace_permissions.VolumePermissions(self.spark, self.account_client)
         return perms.get_permissions()

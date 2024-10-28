@@ -14,6 +14,16 @@ variables:
     description: The catalog to use
   schema:
     description: The schema to use
+  tenant_id:
+    description: The Azure tenant id to use
+  account_id:
+    description: The databricks account id to use
+  client_id:
+    description: The service principal client id to use
+  secret_scope:
+    description: The secret scope to use
+  api_secret_key:
+    description: The SPN secret key to use
 
 targets:
   dev:
@@ -24,12 +34,16 @@ targets:
     mode: development
     default: true
     workspace:
-      host: https://adb-102787049839724.4.azuredatabricks.net/
+      host: https://adb-3718257002844079.19.azuredatabricks.net/
     variables:
-      warehouse_id: 915ef4ce3a493369
+      warehouse_id: bb9bbd50b6a2d6b2
       catalog: auk_dataplatform
       schema: system
-
+      tenant_id: c8e4341f-53a8-4254-9cf6-3707c9077857
+      account_id: 49d4d377-8db8-478e-bf89-18b6cd393ada
+      client_id: 9a8fa6d0-b47b-4e38-8fe3-7b8c3cdbb6f9
+      secret_scope: kvredkic01
+      api_secret_key: sp-dp-databricksapi
   prod:
     mode: production
     workspace:
@@ -40,6 +54,11 @@ targets:
       warehouse_id: 915ef4ce3a493369
       catalog: auk_dataplatform
       schema: system
+      tenant_id: c3588c15-f840-4591-875f-b3d42610f22f
+      account_id: 42ba6f6a-250d-4e87-9433-3ab73685b3f6
+      client_id: 22a10d55-9e76-464d-96bc-3e6c3e44cc35
+      secret_scope: kv-redkic-ne-test
+      api_secret_key: DatabricksAPI
     permissions:
       - user_name: julianadmin@5rqnyj.onmicrosoft.com
         level: CAN_MANAGE

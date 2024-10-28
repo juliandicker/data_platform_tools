@@ -9,13 +9,23 @@ data_platform_tools requires:
 - A databricks workspace with Unity Catalog enabled
 - An Azure Key Vault-backed secret scope named 'kv-redkic-ne-test',  
 (see https://learn.microsoft.com/en-us/azure/databricks/security/secrets/secret-scopes)
-- A Microsoft Entra ID service principal named  'sp-dp-databricksapi' for OAuth M2M
+- A Microsoft Entra ID service principal named for OAuth M2M
    - added to your Azure Databricks account
    - added to each workspace with admin permission
-   - with the SPN secret stored in key vault with key 'DatabricksAPI'
+   - with the SPN secret stored in key vault with key
    
    (*)see https://learn.microsoft.com/en-us/azure/databricks/dev-tools/auth/oauth-m2m#step-3-add-the-service-principal-to-your-azure-databricks-workspace)
 
+## Set Variables
+databricks.yml
+- warehouse_id
+- catalog
+- schema
+- tenant_id
+- account_id
+- client_id
+- secret_scope
+- api_secret_key
 
 ## Getting started
 
@@ -60,3 +70,4 @@ data_platform_tools requires:
 7. For documentation on the Databricks asset bundles format used
    for this project, and for CI/CD configuration, see
    https://docs.databricks.com/dev-tools/bundles/index.html.
+

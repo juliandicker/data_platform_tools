@@ -126,7 +126,7 @@ class ClusterPermissions(WorkspacePermissionsBase):
     def object_key(self):
         return "cluster_id"
 
-    def get_workspace_object_list(self, workspace_client) -> List[T]:
+    def get_workspace_object_list(self, workspace_client: WorkspaceClient) -> List[T]:
         return workspace_client.clusters.list()
 
     def get_object_id(self, workspace_object):
@@ -145,8 +145,46 @@ class WarehousePermissions(WorkspacePermissionsBase):
     def object_key(self):
         return "warehouse_id"
 
-    def get_workspace_object_list(self, workspace_client) -> List[T]:
+    def get_workspace_object_list(self, workspace_client: WorkspaceClient) -> List[T]:
         return workspace_client.warehouses.list()
+
+    def get_object_id(self, workspace_object):
+        return workspace_object.id
+
+class DashboardPermissions(WorkspacePermissionsBase):
+    """
+    Concrete class to gather warehouse permission data for databricks workspaces
+    """
+
+    @property
+    def request_object_type(self):
+        return "dashboards"
+
+    @property
+    def object_key(self):
+        return "dashboard_id"
+
+    def get_workspace_object_list(self, workspace_client: WorkspaceClient) -> List[T]:
+        return workspace_client.dashboards.list()
+
+    def get_object_id(self, workspace_object):
+        return workspace_object.id
+
+class VolumePermissions(WorkspacePermissionsBase):
+    """
+    Concrete class to gather volume permission data for databricks workspaces
+    """
+
+    @property
+    def request_object_type(self):
+        return "volumes"
+
+    @property
+    def object_key(self):
+        return "volume_id"
+
+    def get_workspace_object_list(self, workspace_client: WorkspaceClient) -> List[T]:
+        return workspace_client.volumes.list()
 
     def get_object_id(self, workspace_object):
         return workspace_object.id
